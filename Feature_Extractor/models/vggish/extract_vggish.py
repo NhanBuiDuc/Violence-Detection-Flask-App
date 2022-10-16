@@ -58,7 +58,6 @@ class ExtractVGGish(BaseExtractor):
                 os.remove(audio_aac_path)
 
         feats_dict = {self.feature_type: vggish_stack}
-
         return feats_dict
 
     def load_model(self) -> torch.nn.Module:

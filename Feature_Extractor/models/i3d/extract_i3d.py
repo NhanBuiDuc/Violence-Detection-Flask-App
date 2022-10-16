@@ -80,9 +80,9 @@ class ExtractI3D(BaseExtractor):
             video_path = reencode_video_with_diff_fps(video_path, self.tmp_path, self.extraction_fps)
 
         cap = cv2.VideoCapture(video_path)
-        fps = cap.get(cv2.CAP_PROP_FPS)
+        #fps = cap.get(cv2.CAP_PROP_FPS)
         # timestamp when the last frame in the stack begins (when the old frame of the last pair ends)
-        timestamps_ms = []
+        #timestamps_ms = []
         rgb_stack = []
         feats_dict = {stream: [] for stream in self.streams}
 
@@ -102,7 +102,7 @@ class ExtractI3D(BaseExtractor):
 
             if frame_exists:
                 # preprocess the image
-                rgb = cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB)
+                # rgb = cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB)
                 rgb = self.resize_transforms(rgb)
                 rgb = rgb.unsqueeze(0)
 
@@ -121,7 +121,7 @@ class ExtractI3D(BaseExtractor):
                     # in the prev list and the first element in the current list
                     rgb_stack = rgb_stack[self.step_size:]
                     stack_counter += 1
-                    timestamps_ms.append(cap.get(cv2.CAP_PROP_POS_MSEC))
+                    #timestamps_ms.append(cap.get(cv2.CAP_PROP_POS_MSEC))
             else:
                 # we don't run inference if the stack is not full (applicable for i3d)
                 cap.release()
@@ -132,41 +132,117 @@ class ExtractI3D(BaseExtractor):
             os.remove(video_path)
 
         # transforms list of features into a np array
-        feats_dict = {stream: np.array(feats) for stream, feats in feats_dict.items()}
+        #feats_dict = {stream: np.array(feats) for stream, feats in feats_dict.items()}
         # also include the timestamps and fps
-        feats_dict['fps'] = np.array(fps)
-        feats_dict['timestamps_ms'] = np.array(timestamps_ms)
+        # feats_dict['fps'] = np.array(fps)
+        # feats_dict['timestamps_ms'] = np.array(timestamps_ms)
 
         return feats_dict
 
-    @torch.no_grad()
-    def extract(self, rgb, rgb_stack) -> Dict[str, np.ndarray]:
-        """The extraction call. Made to clean the forward call a bit.
+    # @torch.no_grad()
+    # def extract(self, video_path: str) -> Dict[str, np.ndarray]:
+    #     """The extraction call. Made to clean the forward call a bit.
 
-        Arguments:
-            video_path (str): a video path from which to extract features
+    #     Arguments:
+    #         video_path (str): a video path from which to extract features
 
-        Returns:
-            Dict[str, np.ndarray]: feature name (e.g. 'fps' or feature_type) to the feature tensor
-        """
-        rgb = cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB)
-        rgb = self.resize_transforms(rgb)
-        rgb = rgb.unsqueeze(0)
-        batch_feats_dict = {}
-        rgb_stack.append(rgb)
-        # - 1 is used because we need B+1 frames to calculate B frames
-        if len(rgb_stack) - 1 == self.stack_size:
-            batch_feats_dict = self.run_on_a_stack(rgb_stack, padder=None)
+    #     Returns:
+    #         Dict[str, np.ndarray]: feature name (e.g. 'fps' or feature_type) to the feature tensor
+    #     """
+
+    #     # take the video, change fps and save to the tmp folder
+    #     if self.extraction_fps is not None:
+    #         video_path = reencode_video_with_diff_fps(video_path, self.tmp_path, self.extraction_fps)
+
+    #     cap = cv2.VideoCapture(video_path)
+    #     fps = cap.get(cv2.CAP_PROP_FPS)
+    #     # timestamp when the last frame in the stack begins (when the old frame of the last pair ends)
+    #     timestamps_ms = []
+    #     rgb_stack = []
+    #     feats_dict = {stream: [] for stream in self.streams}
+
+    #     # sometimes when the target fps is 1 or 2, the first frame of the reencoded video is missing
+    #     # and cap.read returns None but the rest of the frames are ok. timestep is 0.0 for the 2nd frame in
+    #     # this case
+    #     first_frame = True
+    #     padder = None
+    #     stack_counter = 0
+    #     while cap.isOpened():
+    #         frame_exists, rgb = cap.read()
+
+    #         if first_frame:
+    #             first_frame = False
+    #             if frame_exists is False:
+    #                 continue
+
+    #         if frame_exists:
+    #             # preprocess the image
+    #             rgb = cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB)
+    #             rgb = self.resize_transforms(rgb)
+    #             rgb = rgb.unsqueeze(0)
+
+    #             if self.flow_type == 'raft' and padder is None:
+    #                 padder = InputPadder(rgb.shape)
+
+    #             rgb_stack.append(rgb)
+
+    #             # - 1 is used because we need B+1 frames to calculate B frames
+    #             if len(rgb_stack) - 1 == self.stack_size:
+    #                 batch_feats_dict = self.run_on_a_stack(rgb_stack, stack_counter, padder)
+    #                 for stream in self.streams:
+    #                     feats_dict[stream].extend(batch_feats_dict[stream].tolist())
+    #                 # leaving the elements if step_size < stack_size so they will not be loaded again
+    #                 # if step_size == stack_size one element is left because the flow between the last element
+    #                 # in the prev list and the first element in the current list
+    #                 rgb_stack = rgb_stack[self.step_size:]
+    #                 stack_counter += 1
+    #                 timestamps_ms.append(cap.get(cv2.CAP_PROP_POS_MSEC))
+    #         else:
+    #             # we don't run inference if the stack is not full (applicable for i3d)
+    #             cap.release()
+    #             break
+
+    #     # removes the video with different fps if it was created to preserve disk space
+    #     if (self.extraction_fps is not None) and (not self.keep_tmp_files):
+    #         os.remove(video_path)
+
+    #     # transforms list of features into a np array
+    #     feats_dict = {stream: np.array(feats) for stream, feats in feats_dict.items()}
+    #     # also include the timestamps and fps
+    #     feats_dict['fps'] = np.array(fps)
+    #     feats_dict['timestamps_ms'] = np.array(timestamps_ms)
+
+    #     return feats_dict
+
+    # @torch.no_grad()
+    # def extract(self, rgb, rgb_stack) -> Dict[str, np.ndarray]:
+    #     """The extraction call. Made to clean the forward call a bit.
+
+    #     Arguments:
+    #         video_path (str): a video path from which to extract features
+
+    #     Returns:
+    #         Dict[str, np.ndarray]: feature name (e.g. 'fps' or feature_type) to the feature tensor
+    #     """
+    #     rgb = cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB)
+    #     rgb = self.resize_transforms(rgb)
+    #     rgb = rgb.unsqueeze(0)
+    #     batch_feats_dict = {}
+    #     rgb_stack.append(rgb)
+    #     # - 1 is used because we need B+1 frames to calculate B frames
+    #     if len(rgb_stack) - 1 == self.stack_size:
+    #         batch_feats_dict = self.run_on_a_stack(rgb_stack, padder=None)
         
-        # return 1 * 1048 numpy array for each 64 frame
-        if len(batch_feats_dict) != 0:
-            return batch_feats_dict
-        return None
+    #     # return 1 * 1048 numpy array for each 64 frame
+    #     if len(batch_feats_dict) != 0:
+    #         return batch_feats_dict
+    #     return None
 
-    def run_on_a_stack(self, rgb_stack, stack_counter=0, padder=None) -> Dict[str, torch.Tensor]:
+    def run_on_a_stack(self, rgb_stack, stack_counter, padder=None) -> Dict[str, torch.Tensor]:
         models = self.name2module['model']
         flow_xtr_model = self.name2module.get('flow_xtr_model', None)
         rgb_stack = torch.cat(rgb_stack).to(self.device)
+
         batch_feats_dict = {}
         for stream in self.streams:
             # if i3d stream is flow, we first need to calculate optical flow, otherwise, we use rgb
@@ -189,7 +265,7 @@ class ExtractI3D(BaseExtractor):
             # extract features for a stream
             batch_feats_dict[stream] = models[stream](stream_slice, features=True)  # (B, 1024)
             # add features to the output dict
-            #self.maybe_show_pred(stream_slice, self.name2module['model'][stream], stack_counter)
+            self.maybe_show_pred(stream_slice, self.name2module['model'][stream], stack_counter)
 
         return batch_feats_dict
 

@@ -23,7 +23,7 @@ def reencode_video_with_diff_fps(video_path: str, tmp_path: str, extraction_fps:
         str: The path where the tmp file is stored. To be used to load the video from
     '''
     assert which_ffmpeg() != '', 'Is ffmpeg installed? Check if the conda environment is activated.'
-    assert video_path.endswith('.mp4'), 'The file does not end with .mp4. Comment this if expected'
+    #assert video_path.endswith('.mp4'), 'The file does not end with .mp4. Comment this if expected'
     # create tmp dir if doesn't exist
     os.makedirs(tmp_path, exist_ok=True)
 

@@ -2,7 +2,7 @@ from sklearn.metrics import auc, precision_recall_curve
 import numpy as np
 import torch
 
-def test(model, input, device):
+def predict(model, input, device):
     with torch.no_grad():
         model.eval()
         pred = torch.zeros(0).to(device)
@@ -31,7 +31,7 @@ def test(model, input, device):
         # pr_auc = auc(recall, precision)
         # precision, recall, th = precision_recall_curve(list(gt), np.repeat(pred2, 16))
         # pr_auc2 = auc(recall, precision)
-        return pred, pred
+        return pred, pred2
 
 
 
