@@ -125,7 +125,7 @@ def record():
 
 	start_AVrecording(filename)  
 	#15s recording
-	time.sleep(15)
+	time.sleep(5)
 		
 	stop_AVrecording(filename)
 	print ("Recording Done")

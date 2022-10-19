@@ -40,9 +40,9 @@ class AudioRecorder():
        
         if self.open==True:
             self.open = False
-            self.stream.stop_stream()
-            self.stream.close()
-            self.audio.terminate()
+            # self.stream.stop_stream()
+            # self.stream.close()
+            # self.audio.terminate()
                
             waveFile = wave.open(self.audio_filename, 'wb')
             waveFile.setnchannels(self.channels)
