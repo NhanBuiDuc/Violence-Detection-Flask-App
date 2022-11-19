@@ -13,8 +13,8 @@ import torch
 import torch.nn.functional as F
 from omegaconf.listconfig import ListConfig
 
-IMAGENET_CLASS_PATH = './utils/IN_label_map.txt'
-KINETICS_CLASS_PATH = './utils/K400_label_map.txt'
+IMAGENET_CLASS_PATH = 'Feature_Extractor/utils/IN_label_map.txt'
+KINETICS_CLASS_PATH = 'Feature_Extractor/utils/K400_label_map.txt'
 
 
 def show_predictions_on_dataset(logits: torch.FloatTensor, dataset: Union[str, List]):

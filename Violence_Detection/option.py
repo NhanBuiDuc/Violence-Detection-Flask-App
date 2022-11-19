@@ -1,7 +1,7 @@
 import argparse
 
 parser = argparse.ArgumentParser(description='WeaklySupAnoDet')
-parser.add_argument('--modality', default='MIX2', help='the type of the input, AUDIO,RGB,FLOW, MIX1, MIX2, or MIX3, MIX_ALL')
+parser.add_argument('--modality', default='RGB', help='the type of the input, AUDIO,RGB,FLOW, MIX1, MIX2, or MIX3, MIX_ALL')
 parser.add_argument('--rgb-list', default='list/rgb.list', help='list of rgb features ')
 parser.add_argument('--flow-list', default='list/flow.list', help='list of flow features')
 parser.add_argument('--audio-list', default='list/audio.list', help='list of audio features')
@@ -15,7 +15,7 @@ parser.add_argument('--batch-size', type=int, default=128, help='number of insta
 parser.add_argument('--workers', default=2, help='number of workers in dataloader')
 parser.add_argument('--model-name', default='wsanodet', help='name to save model')
 parser.add_argument('--pretrained-ckpt', default=None, help='ckpt for pretrained model')
-parser.add_argument('--feature-size', type=int, default=1024+128, help='size of feature (default: 2048)')
+parser.add_argument('--feature-size', type=int, default=1024, help='size of feature (default: 2048)')
 # parser.add_argument('--feature-size', type=int, default=2048, help='size of feature (default: 2048)')
 parser.add_argument('--num-classes', type=int, default=1, help='number of class')
 parser.add_argument('--dataset-name', default='XD-Violence', help='dataset to train on (default: )')

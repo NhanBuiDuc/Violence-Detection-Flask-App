@@ -1,73 +1,161 @@
+from datetime import datetime
+from re import S
 import cv2
 import wave
 import threading
 import time
-
+from AVrecordeR.audio_recorder import AudioRecorder
+from frame import Frame
 class VideoRecorder():
-	
-	# Video class based on openCV 
-	def __init__(self):
-		
-		self.open = True
-		self.device_index = 0
-		self.fps = 6               # fps should be the minimum constant rate at which the camera can
-		self.fourcc = "MJPG"       # capture images (with no decrease in speed over time; testing is required)
-		self.frameSize = (640,480) # video formats and sizes also depend and vary according to the camera used
-		self.video_filename = "temp_video.avi"
-		self.video_cap = cv2.VideoCapture(self.device_index)
-		self.video_writer = cv2.VideoWriter_fourcc(*self.fourcc)
-		self.video_out = cv2.VideoWriter(self.video_filename, self.video_writer, self.fps, self.frameSize)
-		self.frame_counts = 1
-		self.start_time = time.time()
+    
+    # Video class based on openCV 
+    def __init__(self, video_filename = None):
+        self.open = True
+        self.video_filename = video_filename
+        self.device_index = 0
+        self.video_cap = cv2.VideoCapture(self.video_filename)
+        self.webcam_cap = cv2.VideoCapture(self.device_index)
+        self.fps = self.video_cap.get(cv2.CAP_PROP_FPS)
+        if self.fps == 0:
+            self.fps = self.webcam_cap.get(cv2.CAP_PROP_FPS)
+        self.save_interval = 5
+        self.frame_count = 0
+        self.frameSize = (640,480)
+        
+    # Video starts being recorded 
+    def record(self, single_frame_event, interval_extract_event, i3d_lock,  outputRGBs, frames_queue, outputRGB):            
+                while(self.open==True):
+                    ret, video_frame = self.video_cap.read()
 
-	
-	# Video starts being recorded 
-	def record(self):
-		
-#		counter = 1
-		timer_start = time.time()
-		timer_current = 0
-		
-		
-		while(self.open==True):
-			ret, video_frame = self.video_cap.read()
-			if (ret==True):
-				
-					self.video_out.write(video_frame)
-#					print str(counter) + " " + str(self.frame_counts) + " frames written " + str(timer_current)
-					self.frame_counts += 1
-#					counter += 1
-#					timer_current = time.time() - timer_start
-					time.sleep(0.16)
-					
-					# Uncomment the following three lines to make the video to be
-					# displayed to screen while recording
-					
-					# gray = cv2.cvtColor(video_frame, cv2.COLOR_BGR2RGB)
-					# cv2.imshow('video_frame', gray)
-					# cv2.waitKey(1)
-			else:
-				break
-							
-				# 0.16 delay -> 6 fps
-				# 
-				
+                    if (ret == True):
+                        
+                        # # Display the resulting frame
+                        # cv2.imshow('Video', video_frame)
+                    
+                        # # Press Q on keyboard to  exit
+                        # if cv2.waitKey(25) & 0xFF == ord('q'):
+                        #     break
 
-	# Finishes the video recording therefore the thread too
-	def stop(self):
-		
-		if self.open==True:
-			
-			self.open=False
-			self.video_out.release()
-			self.video_cap.release()
-			cv2.destroyAllWindows()
-			
-		else: 
-			pass
+                        single_frame_event.set()
+
+                        if self.frame_count == 0:
+                            frame = Frame(start = datetime.now(), rgb = [])
+
+                        
+                        frame.rgb.append(video_frame)
+
+                        self.frame_count += 1
+                        if (self.frame_count == (self.fps * self.save_interval)):
+                            frame.end = datetime.now()
+                            self.frame_count = 0
+                            frames_queue.append(frame)
+                        outputRGB = video_frame
+                        outputRGBs.append(video_frame)
+                        
+                        if len(frames_queue) > 0:
+                            interval_extract_event.set()
+                    else:
+                        self.stop()
+                        break
+
+    # Video starts being recorded 
+    def record_webcam_demo(self, frame_queue, extract_event):
+      
+        while(self.open==True):
+            ret, video_frame = self.webcam_cap.read()
+
+            if (ret == True):
+
+                # Display the resulting frame
+                cv2.imshow('Video', video_frame)
+            
+                # Press Q on keyboard to  exit
+                if cv2.waitKey(25) & 0xFF == ord('q'):
+                    break
+                if self.frame_count == 0:
+                    frame = Frame(start = datetime.now(), rgb = [])
+
+                frame.rgb.append(video_frame)
+
+                self.frame_count += 1
+                # Duration : 60s for 24fps, means frame_count = fps * duration = 24 *  60
+                # Recorded at 30 fps, but wanted_fps is 24, the ratio 24/30 = 0.8.
+                if (self.frame_count == (self.fps * self.save_interval)):
+                    frame.end = datetime.now()
+                    self.frame_count = 0
+                    frame_queue.put(frame)
+
+                if not frame_queue.empty():
+                    extract_event.set()   
+                
+            else:
+                self.stop()
+                break               
+            
+    # Video starts being recorded 
+    def record_video_demo(self, frame_queue, extract_event):
+        
+        while(self.open==True):
+            ret, video_frame = self.video_cap.read()
+
+            if (ret == True):
+                # Display the resulting frame
+                cv2.imshow('Video', video_frame)
+            
+                # Press Q on keyboard to  exit
+                if cv2.waitKey(25) & 0xFF == ord('q'):
+                    break
+
+                if self.frame_count == 0:
+                    frame = Frame(start = datetime.now(), rgb = [])
+
+                frame.rgb.append(video_frame)
+                
+                self.frame_count += 1
+                # Duration : 60s for 24fps, means frame_count = fps * duration = 24 *  60
+                # Recorded at 30 fps, but wanted_fps is 24, the ratio 24/30 = 0.8.
+                if (self.frame_count == (self.fps * self.save_interval)):
+                    frame.end = datetime.now()
+                    self.frame_count = 0
+                    frame_queue.put(frame)
+
+                if not frame_queue.empty():
+                    extract_event.set()   
+                
+            else:
+                self.stop()
+                break
+
+    # Finishes the video recording therefore the thread too
+    def stop(self):
+        
+        if self.open==True:
+            
+            self.open=False
+            # self.video_out.release()
+            self.video_cap.release()
+            cv2.destroyAllWindows()
+            
+        else: 
+            pass
 
 
-	# Launches the video recording function using a thread			
-	def start(self):
-		video_thread = threading.Thread(target=self.record)
-		video_thread.start()
+    # # Launches the video recording function using a thread			
+    # def start(self, stream_queue, frame_queue, wanted_fps, extract_event, stream_event):
+    #     video_thread = threading.Thread(target=self.record, args=(stream_queue, frame_queue, wanted_fps, extract_event, stream_event, ))
+    #     video_thread.start()
+
+    # # Launches the video recording function using a thread			
+    # def start_video(self, stream_queue, frame_queue, wanted_fps, extract_event, stream_event):
+    #     video_thread = threading.Thread(target=self.record_video, args=(stream_queue, frame_queue, wanted_fps, extract_event, stream_event, ))
+    #     video_thread.start()
+    
+    # Launches the video recording function using a thread			
+    def start_video_demo(self, frame_queue, extract_event):
+        video_thread = threading.Thread(target=self.record_video_demo, args=(frame_queue, extract_event, ))
+        video_thread.start()
+    
+    # Launches the video recording function using a thread			
+    def start_webcam_demo(self, frame_queue, extract_event):
+        video_thread = threading.Thread(target=self.record_webcam_demo, args=(frame_queue, extract_event, ))
+        video_thread.start()

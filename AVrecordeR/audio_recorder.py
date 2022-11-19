@@ -2,7 +2,7 @@ import cv2
 import pyaudio
 import wave
 import threading
-
+import io   
 class AudioRecorder():
 	
 
@@ -11,6 +11,7 @@ class AudioRecorder():
         
         self.open = True
         self.rate = 44100
+        self.duration = 5
         self.frames_per_buffer = 1024
         self.channels = 2
         self.format = pyaudio.paInt16
@@ -25,7 +26,7 @@ class AudioRecorder():
 
 
     # Audio starts being recorded
-    def record(self):
+    def record(self, frame_queue):
         
         self.stream.start_stream()
         while(self.open == True):
@@ -40,9 +41,9 @@ class AudioRecorder():
        
         if self.open==True:
             self.open = False
-            # self.stream.stop_stream()
-            # self.stream.close()
-            # self.audio.terminate()
+            self.stream.stop_stream()
+            self.stream.close()
+            self.audio.terminate()
                
             waveFile = wave.open(self.audio_filename, 'wb')
             waveFile.setnchannels(self.channels)
@@ -54,6 +55,6 @@ class AudioRecorder():
         pass
     
     # Launches the audio recording function using a thread
-    def start(self):
-        audio_thread = threading.Thread(target=self.record)
+    def start(self, frame_queue):
+        audio_thread = threading.Thread(target=self.record, args=(frame_queue,))
         audio_thread.start()

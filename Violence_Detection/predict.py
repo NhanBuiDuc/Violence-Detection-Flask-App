@@ -9,6 +9,7 @@ def predict(model, data_loader, device):
         pred2 = torch.zeros(0).to(device)
         for i, input in enumerate(data_loader):
             input = input[0].to(device)
+            
             logits, logits2 = model(inputs=input, seq_len=None)
             logits = torch.squeeze(logits)
             sig = torch.sigmoid(logits)
