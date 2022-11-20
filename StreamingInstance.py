@@ -114,7 +114,6 @@ class StreamingInstance():
                          bytearray(encodedImage) + b'\r\n')
      def streaming(self):
           self.single_frame_event.wait()
-          self.xd_process.join()
           while(True):
                if(len(self.outputRGBs) > 0):
                     with self.ssd_lock:
