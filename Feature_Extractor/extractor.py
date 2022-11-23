@@ -16,7 +16,7 @@ from Queue import Queue as CustomQueue
 from queue import Queue
 
 def read_i3d_demo(video_queue, extract_event):
-    # extract_event.wait()
+    extract_event.wait()
     torch.cuda.empty_cache()
     args = option.parser.parse_args()
     
@@ -28,7 +28,7 @@ def read_i3d_demo(video_queue, extract_event):
 
 
 def read_i3d(interval_extract_event, frames_queue, i3d_queue):
-    # extract_event.wait()
+    interval_extract_event.wait()
     torch.cuda.empty_cache()
     args = option.parser.parse_args()
     

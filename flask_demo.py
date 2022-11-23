@@ -16,7 +16,7 @@ def initialize_camera():
 	args = 	request.args
 	id = args.get('id')
 	id = 1
-	stream = StreamingInstance(id = id, video_filename="demo2.mp4")
+	stream = StreamingInstance(id = id, video_filename="demo.mp4")
 	instances.update( {str(stream.id):stream} )
 	stream.start()
 	response = app.response_class(
@@ -86,48 +86,7 @@ def end_instance():
         mimetype='application/json'
     )
 	return response
-# def main():
-# 	global outputFrame, lock
-# 	vs = VideoStream(src=0).start()
-# 	time.sleep(2.0)
 
-# 	net = serializing_model()
-
-
-# 	# loop over the frames from the video stream
-# 	while True:
-# 		# Preprossesing the frames to obtain detections
-# 		blob, frame = preprocess_video_frames(vs)
-
-# 		# Obtaining detections from each frame
-# 		detections = get_detections_from_frames(blob, net)
-		
-# 		# loop over the detections
-# 		for key in np.arange(0, detections.shape[2]):
-# 			# extract the confidence associated with the prediction
-# 			confidence = detections[0, 0, key, 2]
-
-# 			# filter out weak detections
-# 			idx = filter_out_detections(detections, confidence, key)
-
-# 			if(idx == None):
-# 				break
-# 			else:
-# 				# Get the bounding boxes for the detections
-# 				box = draw_bounding_box(detections, frame, key)
-				
-# 				# Get predictions for the boxes
-# 				label = predict_class_labels(confidence, idx)
-
-# 				# Draw predictions on frames
-# 				frame = draw_predictions_on_frames(box, label, frame, idx)
-
-# 		with lock:
-# 				outputFrame = frame.copy()
-
-# @app.route("/violence_score")
-# def violence_score():
-# 	return Response(main())
 	
 if __name__ == "__main__":
 

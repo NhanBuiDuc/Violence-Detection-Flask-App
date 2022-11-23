@@ -22,7 +22,7 @@ def main(model):
     """
     Start Recording
     """
-    recorder.record_video_demo(frame_queue = video_queue, extract_event = extract_event, video_filename = "non-violent.mp4")
+    recorder.record_video_demo(frame_queue = video_queue, extract_event = extract_event, video_filename = "demo.mp4")
 
     i3d_frame= extractor.listener_demo(video_queue, extract_event) 
     i3d_buffer.append(i3d_frame)

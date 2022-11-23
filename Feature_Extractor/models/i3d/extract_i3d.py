@@ -217,8 +217,6 @@ class ExtractI3D(BaseExtractor):
         # sometimes when the target fps is 1 or 2, the first frame of the reencoded video is missing
         # and cap.read returns None but the rest of the frames are ok. timestep is 0.0 for the 2nd frame in
         # this case
-        first_frame = True
-        padder = None
         stack_counter = 0
 
         if(len(frames_queue) > 0):
@@ -230,21 +228,17 @@ class ExtractI3D(BaseExtractor):
                 rgb = self.resize_transforms(rgb)
                 rgb = rgb.unsqueeze(0)
 
-                if self.flow_type == 'raft' and padder is None:
-                    padder = InputPadder(rgb.shape)
-
                 rgb_stack.append(rgb)
 
                     # - 1 is used because we need B+1 frames to calculate B frames
                 if len(rgb_stack) - 1 == self.stack_size:
-                    batch_feats_dict = self.run_on_a_stack(rgb_stack, stack_counter, padder)
-                    for stream in self.streams:
-                        feats_dict[stream].extend(batch_feats_dict[stream].tolist())
-                        # leaving the elements if step_size < stack_size so they will not be loaded again
-                        # if step_size == stack_size one element is left because the flow between the last element
-                        # in the prev list and the first element in the current list
-                        rgb_stack = rgb_stack[self.step_size:]
-                        stack_counter += 1
+                    batch_feats_dict = self.run_on_a_stack(rgb_stack)
+                    feats_dict['rgb'].extend(batch_feats_dict['rgb'].tolist())
+                    # leaving the elements if step_size < stack_size so they will not be loaded again
+                    # if step_size == stack_size one element is left because the flow between the last element
+                    # in the prev list and the first element in the current list
+                    rgb_stack = rgb_stack[self.step_size:]
+                    stack_counter += 1
             current_frame.i3d = feats_dict['rgb']
             i3d_queue.append(current_frame)
 
@@ -252,36 +246,16 @@ class ExtractI3D(BaseExtractor):
             interval_extract_event.wait()
         return
 
-    def run_on_a_stack(self, rgb_stack, stack_counter, padder=None) -> Dict[str, torch.Tensor]:
-        models = self.name2module['model']
-        flow_xtr_model = self.name2module.get('flow_xtr_model', None)
-        rgb_stack = torch.cat(rgb_stack).to(self.device)
+    def run_on_a_stack(self, rgb_stack) -> Dict[str, torch.Tensor]:
+            models = self.name2module['model']
+            rgb_stack = torch.cat(rgb_stack).to(self.device)
 
-        batch_feats_dict = {}
-        for stream in self.streams:
-            # if i3d stream is flow, we first need to calculate optical flow, otherwise, we use rgb
-            # `end_idx-1` and `start_idx+1` because flow is calculated between f and f+1 frames
-            # we also use `end_idx-1` for stream == 'rgb' case: just to make sure the feature length
-            # is same regardless of whether only rgb is used or flow
-            if stream == 'flow':
-                if self.flow_type == 'raft':
-                    stream_slice = flow_xtr_model(padder.pad(rgb_stack)[:-1], padder.pad(rgb_stack)[1:])
-                elif self.flow_type == 'pwc':
-                    stream_slice = flow_xtr_model(rgb_stack[:-1], rgb_stack[1:])
-                else:
-                    raise NotImplementedError
-            elif stream == 'rgb':
-                stream_slice = rgb_stack[:-1]
-            else:
-                raise NotImplementedError
-            # apply transforms depending on the stream (flow or rgb)
-            stream_slice = self.i3d_transforms[stream](stream_slice)
-            # extract features for a stream
-            batch_feats_dict[stream] = models[stream](stream_slice, features=True)  # (B, 1024)
-            # add features to the output dict
-            # self.maybe_show_pred(stream_slice, self.name2module['model'][stream], stack_counter)
+            batch_feats_dict = {}
+            stream_slice = rgb_stack[:-1]
+            stream_slice = self.i3d_transforms['rgb'](stream_slice)
+            batch_feats_dict['rgb'] = models['rgb'](stream_slice, features=True)
 
-        return batch_feats_dict
+            return batch_feats_dict
 
     def load_model(self) -> Dict[str, torch.nn.Module]:
         """Defines the models, loads checkpoints, sends them to the device.

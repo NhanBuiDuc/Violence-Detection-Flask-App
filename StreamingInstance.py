@@ -10,6 +10,7 @@ from Feature_Extractor.models.i3d.extract_i3d import ExtractI3D
 from prediction import Prediction
 import threading
 import Feature_Extractor.extractor as extractor
+import time
 class StreamingInstance():
      def __init__(self, id, video_filename = None):
           self.id = id
@@ -64,37 +65,27 @@ class StreamingInstance():
 
           # extract_process.start()
           record_process.start()
-          # stream_process.start()
+          stream_process.start()
           xd_process.start()
           # ssd_process.start()
   
           self.record_process = record_process
           self.xd_process = xd_process
           # self.ssd_process = ssd_process
-          self.stream_process = stream_process
+          # self.stream_process = stream_process
 
      def xd(self):
-          extractor.listener(self.interval_extract_event, self.frames_queue, self.i3d_queue)
-          while(self.interval_extract_event.isSet() == True):
-               extractor.extract(self.interval_extract_event, self.frames_queue, self.i3d_queue)
-               detector.inference(frames = self.i3d_queue, model=self.XDmodel, batch = self.xd_batch, prediction = self.prediction)
-               print("At: ", self.prediction.start)
-               print("Violence: ", self.prediction.prediction)
-               print("Violent Rate: ", self.prediction.score)
-               self.i3d_queue.pop(0)
-
-     # def xd(self):
-     #           self.interval_extract_event.wait()
-     #           with self.i3d_lock:
-     #                     if len(self.frames_queue) > 0:
-     #                          self.i3d_extractor.extract(self.interval_extract_event, frames_queue=self.frames_queue, i3d_queue = self.i3d_queue)
-     #                     # self.i3d_lock.release()
-     #                     if(len(self.i3d_queue) >= 5):
-     #                          detector.inference(frames = self.i3d_queue, model=self.XDmodel, batch = self.xd_batch, prediction = self.prediction)
-     #                          print("At: ", self.prediction.start)
-     #                          print("Violence: ", self.prediction.prediction)
-     #                          print("Violent Rate: ", self.prediction.score)
-     #                          self.i3d_queue.pop(0)
+          self.interval_extract_event.wait()
+          while(True):
+               time.sleep(0.5)
+               if(len(self.frames_queue) > 0):
+                    self.i3d_extractor.extract(self.interval_extract_event, self.frames_queue, self.i3d_queue)
+               if(len(self.i3d_queue) >= 5):
+                    detector.inference(frames = self.i3d_queue, model=self.XDmodel, batch = self.xd_batch, prediction = self.prediction)
+                    print("At: ", self.prediction.start)
+                    print("Violence: ", self.prediction.prediction)
+                    print("Violent Rate: ", self.prediction.score)
+                    self.i3d_queue.pop(0)
 
      def get_prediction(self):
           if self.prediction != None:
@@ -150,6 +141,7 @@ class StreamingInstance():
                                         frame = self.draw_predictions_on_frames(box, label, frame, idx)
                          with self.ssd_lock:
                               self.outputRGB = frame.copy()
+                    self.single_frame_event.wait()
 
      def preprocess_video_frames(self, frame):
 
