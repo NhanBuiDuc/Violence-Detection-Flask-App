@@ -65,7 +65,7 @@ class StreamingInstance():
 
           # extract_process.start()
           record_process.start()
-          stream_process.start()
+          # stream_process.start()
           xd_process.start()
           # ssd_process.start()
   
