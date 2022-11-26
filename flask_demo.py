@@ -3,7 +3,6 @@ from flask import Flask, request, render_template, json, jsonify
 from flask import Response
 from StreamingInstance import StreamingInstance 
 import threading
-from imutils.video import VideoStream
 from multiprocessing import Manager
 
 app = Flask(__name__)
