@@ -85,7 +85,7 @@ def end_instance():
     )
 	return response
 	
-# if __name__ == "__main__":
+if __name__ == "__main__":
 
-# 	app.run(threaded = False)
+	app.run(threaded = False)
 	

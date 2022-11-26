@@ -61,13 +61,13 @@ class StreamingInstance():
      def start(self):
           record_process = threading.Thread(target=self.recorder.record, args = ( self.single_frame_event, self.interval_extract_event, self.i3d_lock , self.outputRGBs, self.frames_queue, self.outputRGB,))
           # ssd_process = threading.Thread(target=self.ssd, args=())
-          stream_process = threading.Thread(target=self.streaming, args=())
+          # stream_process = threading.Thread(target=self.streaming, args=())
           xd_process = threading.Thread(target=self.xd, args=())
 
           # extract_process.start()
           record_process.start()
-          stream_process.start()
-          # xd_process.start()
+          # stream_process.start()
+          xd_process.start()
           # ssd_process.start()
   
           self.record_process = record_process
@@ -210,12 +210,12 @@ class StreamingInstance():
           
           self.record_process.join()
           self.xd_process.join()
-          self.extract_process.join()
-          self.ssd_process.join()
+          # self.extract_process.join()
+          # self.ssd_process.join()
 
                     
           self.record_process.do_run = False
           self.xd_process.do_run = False
-          self.extract_process.do_run = False
-          self.ssd_process.do_run = False
+          # self.extract_process.do_run = False
+          # self.ssd_process.do_run = False
           return("ENDED THE STREAM")
