@@ -15,7 +15,7 @@ from Feature_Extractor.models.raft.raft_src.raft import RAFT, InputPadder
 from Feature_Extractor.models.transforms import (Clamp, PermuteAndUnsqueeze, PILToTensor,
                                ResizeImproved, ScaleTo1_1, TensorCenterCrop,
                                ToFloat, ToUInt8)
-from Feature_Extractor.utils.utils import dp_state_to_normal, show_predictions_on_dataset
+from Feature_Extractor.utils.utils import dp_state_to_normal
 
 
 class ExtractI3D(BaseExtractor):
