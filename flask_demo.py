@@ -29,31 +29,31 @@ def get_camera():
 	return render_template('index.html')
 
 
-@app.route("/xd")
-def xd():
-	global instances
+# @app.route("/xd")
+# def xd():
+# 	global instances
 
-	args = 	request.args
-	id = args.get('id')
-	id = 1
+# 	args = 	request.args
+# 	id = args.get('id')
+# 	id = 1
 
-	stream = instances.get(str(id))
-	prediction = stream.get_prediction()
-	if(prediction.prediction != None):
-		return jsonify(
-				start = str(prediction.start_datetime()),
-				end = str(prediction.end_datetime()),
-				score = str(prediction.score),
-				prediction = str(prediction.prediction),
-				thresh_hold = prediction.thresh_hold
-		)
-	else:
-		response = app.response_class(
-        response=json.dumps("NO PREDICTION"),
-        status=200,
-        mimetype='application/json'
-    )
-	return response
+# 	stream = instances.get(str(id))
+# 	prediction = stream.get_prediction()
+# 	if(prediction.prediction != None):
+# 		return jsonify(
+# 				start = str(prediction.start_datetime()),
+# 				end = str(prediction.end_datetime()),
+# 				score = str(prediction.score),
+# 				prediction = str(prediction.prediction),
+# 				thresh_hold = prediction.thresh_hold
+# 		)
+# 	else:
+# 		response = app.response_class(
+#         response=json.dumps("NO PREDICTION"),
+#         status=200,
+#         mimetype='application/json'
+#     )
+# 	return response
 	
 @app.route("/video_feed")
 def video_feed():
@@ -68,22 +68,22 @@ def video_feed():
 	return Response(stream.raw_stream(),
 		mimetype = "multipart/x-mixed-replace; boundary=frame")
 
-@app.route("/end_instance")
-def end_instance():
-	global instances
+# @app.route("/end_instance")
+# def end_instance():
+# 	global instances
 
-	args = 	request.args
-	id = args.get('id')
-	id = 1
+# 	args = 	request.args
+# 	id = args.get('id')
+# 	id = 1
 
-	stream = instances.get(str(id))
-	stream.end()
-	response = app.response_class(
-        response=json.dumps("ENDED THE STREAM"),
-        status=200,
-        mimetype='application/json'
-    )
-	return response
+# 	stream = instances.get(str(id))
+# 	stream.end()
+# 	response = app.response_class(
+#         response=json.dumps("ENDED THE STREAM"),
+#         status=200,
+#         mimetype='application/json'
+#     )
+# 	return response
 
 	
 if __name__ == "__main__":
