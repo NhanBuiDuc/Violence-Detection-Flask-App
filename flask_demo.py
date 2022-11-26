@@ -24,7 +24,7 @@ def initialize_camera():
     )
 	return response
 
-@app.route('/get_camera')
+@app.route('/')
 def get_camera():
 	return render_template('index.html')
 
@@ -84,7 +84,6 @@ def end_instance():
         mimetype='application/json'
     )
 	return response
-
 	
 # if __name__ == "__main__":
 
