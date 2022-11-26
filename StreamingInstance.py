@@ -66,14 +66,15 @@ class StreamingInstance():
 
           # extract_process.start()
           record_process.start()
-          # stream_process.start()
+          stream_process.start()
           xd_process.start()
           # ssd_process.start()
   
           self.record_process = record_process
           self.xd_process = xd_process
+          self.stream_process = stream_process
           # self.ssd_process = ssd_process
-          # self.stream_process = stream_process
+
 
      def xd(self):
           self.interval_extract_event.wait()
