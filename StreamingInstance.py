@@ -57,6 +57,7 @@ class StreamingInstance():
           self.xd_process = None
           self.extract_process = None
           self.stream_process = None
+          
      def start(self):
           record_process = threading.Thread(target=self.recorder.record, args = ( self.single_frame_event, self.interval_extract_event, self.i3d_lock , self.outputRGBs, self.frames_queue, self.outputRGB,))
           # ssd_process = threading.Thread(target=self.ssd, args=())

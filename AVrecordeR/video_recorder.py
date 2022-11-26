@@ -4,7 +4,6 @@ import cv2
 import wave
 import threading
 import time
-from AVrecordeR.audio_recorder import AudioRecorder
 from frame import Frame
 class VideoRecorder():
     
