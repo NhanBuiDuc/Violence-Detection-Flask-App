@@ -15,7 +15,6 @@ from Feature_Extractor.models.raft.raft_src.raft import RAFT, InputPadder
 from Feature_Extractor.models.transforms import (Clamp, PermuteAndUnsqueeze, PILToTensor,
                                ResizeImproved, ScaleTo1_1, TensorCenterCrop,
                                ToFloat, ToUInt8)
-from Feature_Extractor.utils.io import reencode_video_with_diff_fps
 from Feature_Extractor.utils.utils import dp_state_to_normal, show_predictions_on_dataset
 
 
@@ -32,7 +31,6 @@ class ExtractI3D(BaseExtractor):
             device=args.device,
         )
         # (Re-)Define arguments for this class
-        # self.streams = ['rgb', 'flow'] if args.streams is None else [args.streams]
         self.streams = ['rgb']
         self.flow_type = args.flow_type
         self.i3d_classes_num = 400

@@ -1,14 +1,11 @@
 import threading
 import Feature_Extractor.option as option
-from Feature_Extractor.utils.utils import form_list_from_user_input
 from Feature_Extractor.models.i3d.extract_i3d import ExtractI3D
-from Feature_Extractor.models.vggish.extract_vggish import ExtractVGGish
 import logging
 import torch
 import cv2
 import numpy as np
 from Violence_Detection.infer import infer
-import pyaudio
 import wave
 import time
 from datetime import datetime

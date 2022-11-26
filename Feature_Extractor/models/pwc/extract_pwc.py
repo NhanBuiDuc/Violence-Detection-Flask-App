@@ -1,4 +1,4 @@
-import omegaconf
+# import omegaconf
 from Feature_Extractor.models._base.base_flow_extractor import BaseOpticalFlowExtractor
 
 # defined as a constant here, because i3d imports it
@@ -9,7 +9,7 @@ DATASET_to_PWC_CKPT_PATHS = {
 
 class ExtractPWC(BaseOpticalFlowExtractor):
 
-    def __init__(self, args: omegaconf.DictConfig) -> None:
+    def __init__(self, args) -> None:
         super().__init__(
             feature_type=args.feature_type,
             on_extraction=args.on_extraction,
