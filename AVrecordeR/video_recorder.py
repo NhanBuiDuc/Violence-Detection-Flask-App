@@ -1,5 +1,4 @@
 from datetime import datetime
-from re import S
 import cv2
 import wave
 import threading
@@ -22,8 +21,8 @@ class VideoRecorder():
         self.frameSize = (640,480)
         
     # Video starts being recorded 
-    def record(self, single_frame_event, interval_extract_event, i3d_lock,  outputRGBs, frames_queue, outputRGB):            
-                while(self.open==True):
+    def record(self, single_frame_event, interval_extract_event, process_stop,  outputRGBs, frames_queue, outputRGB):            
+                while(process_stop.isSet() == True):
                     ret, video_frame = self.video_cap.read()
 
                     if (ret == True):

@@ -28,6 +28,8 @@ class StreamingInstance():
           self.net = cv2.dnn.readNetFromCaffe("SSD/MobileNetSSD_deploy.prototxt", "SSD/MobileNetSSD_deploy.caffemodel")
           self.single_frame_event = threading.Event()
           self.interval_extract_event = threading.Event()
+          self.process_running = threading.Event()
+          
           manager = Manager()
           self.manager = manager.dict()
           self.manager['i3d_queue'] = []
@@ -57,28 +59,30 @@ class StreamingInstance():
           self.xd_process = None
           self.extract_process = None
           self.stream_process = None
-          
+
      def start(self):
-          record_process = threading.Thread(target=self.recorder.record, args = ( self.single_frame_event, self.interval_extract_event, self.i3d_lock , self.outputRGBs, self.frames_queue, self.outputRGB,))
-          # ssd_process = threading.Thread(target=self.ssd, args=())
-          # stream_process = threading.Thread(target=self.streaming, args=())
+          self.process_running.set()
+          record_process = threading.Thread(target=self.recorder.record, args = ( self.single_frame_event, self.interval_extract_event, self.process_running , self.outputRGBs, self.frames_queue, self.outputRGB,))
+          ssd_process = threading.Thread(target=self.ssd, args=())
+
           xd_process = threading.Thread(target=self.xd, args=())
+          # stream_process = threading.Thread(target=self.streaming, args=())
 
           # extract_process.start()
           record_process.start()
-          # stream_process.start()
           xd_process.start()
-          # ssd_process.start()
-  
+          ssd_process.start()
+          # stream_process.start()
+          
           self.record_process = record_process
           self.xd_process = xd_process
           # self.stream_process = stream_process
-          # self.ssd_process = ssd_process
+          self.ssd_process = ssd_process
 
 
      def xd(self):
           self.interval_extract_event.wait()
-          while(True):
+          while(self.process_running.isSet() == True):
                time.sleep(0.5)
                if(len(self.frames_queue) > 0):
                     self.i3d_extractor.extract(self.interval_extract_event, self.frames_queue, self.i3d_queue)
@@ -95,7 +99,7 @@ class StreamingInstance():
           else:
                return None
      def raw_stream(self):
-          while(True):
+          while(self.process_running.isSet() == True):
                if self.outputRGB is None:
                     continue
                if(len(self.outputRGB) > 0):
@@ -113,7 +117,7 @@ class StreamingInstance():
                          self.outputRGB = self.outputRGBs.pop(0)
      def ssd(self):
                self.single_frame_event.wait()
-               while(True):
+               while(self.process_running.isSet() == True):
                     # Preprossesing the frames to obtain detections
                     if (len(self.outputRGBs)) != 0:
                          blob, frame = self.preprocess_video_frames(self.outputRGBs.pop(0))
@@ -190,7 +194,7 @@ class StreamingInstance():
           return frame
 
      def generate(self):
-          while True:
+          while self.process_running.isSet() == True:
                     # wait until the lock is acquired
                     with self.ssd_lock:
                          # check if the output frame is available, otherwise skip
@@ -206,16 +210,7 @@ class StreamingInstance():
                     yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + 
                          bytearray(encodedImage) + b'\r\n')
 
-     def end(self):
-          
-          self.record_process.join()
-          self.xd_process.join()
-          # self.extract_process.join()
-          # self.ssd_process.join()
-
-                    
-          self.record_process.do_run = False
-          self.xd_process.do_run = False
-          # self.extract_process.do_run = False
-          # self.ssd_process.do_run = False
+     def stop(self):
+          self.process_running.clear()
+          self.recorder.stop()
           return("ENDED THE STREAM")

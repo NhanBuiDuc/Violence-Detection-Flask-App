@@ -4,12 +4,23 @@ from flask import Response
 from StreamingInstance import StreamingInstance 
 import threading
 from multiprocessing import Manager
-
+import os
+import sys
 app = Flask('app')
-
+app_thread = threading.Thread(name="Webapp",target=app.run, args = ())
 instances = {}
 
-@app.route('/initialize_camera')
+
+# def thread_webAPP():
+#     app = Flask(__name__)
+
+#     @app.route("/")
+#     def nothing():
+#         return "Hello World!"
+
+#     app.run(debug=True, use_reloader=False)
+
+@app.route('/start')
 def initialize_camera():
 	args = 	request.args
 	id = args.get('id')
@@ -63,13 +74,12 @@ def video_feed():
 	id = args.get('id')
 	id = 1
 
-
 	stream = instances.get(str(id))
-	return Response(stream.raw_stream(),
+	return Response(stream.generate(),
 		mimetype = "multipart/x-mixed-replace; boundary=frame")
 
-@app.route("/end_instance")
-def end_instance():
+@app.route("/stop")
+def stop():
 	global instances
 
 	args = 	request.args
@@ -77,15 +87,19 @@ def end_instance():
 	id = 1
 
 	stream = instances.get(str(id))
-	stream.end()
+	stream.stop()
 	response = app.response_class(
-        response=json.dumps("ENDED THE STREAM"),
+        response=json.dumps("STOPED THE STREAM"),
         status=200,
         mimetype='application/json'
     )
 	return response
-	
+
+# @app.route("/quit")
+# def quit():
+# 	quit()
+
 if __name__ == "__main__":
 
-	app.run(threaded = False)
-	
+	app_thread.setDaemon = True
+	app_thread.start()
