@@ -7,7 +7,7 @@ from multiprocessing import Manager
 import os
 import sys
 app = Flask('app')
-app_thread = threading.Thread(name="Webapp",target=app.run, args = ())
+app_thread = threading.Thread(name="Webapp",target=app.run, args = ('0.0.0.0', 5000, ))
 instances = {}
 
 
