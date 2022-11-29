@@ -6,8 +6,10 @@ import threading
 from multiprocessing import Manager
 import os
 import sys
+from waitress import serve
+
 app = Flask('app')
-app_thread = threading.Thread(name="Webapp",target=app.run, args = ('0.0.0.0', 5000, ))
+
 instances = {}
 
 
@@ -21,7 +23,7 @@ instances = {}
 #     app.run(debug=True, use_reloader=False)
 
 @app.route('/start')
-def initialize_camera():
+def start():
 	args = 	request.args
 	id = args.get('id')
 	id = 1
@@ -100,6 +102,4 @@ def stop():
 # 	quit()
 
 if __name__ == "__main__":
-
-	app_thread.setDaemon = True
-	app_thread.start()
+	serve(app, host='0.0.0.0', port=5000, threads= 10)

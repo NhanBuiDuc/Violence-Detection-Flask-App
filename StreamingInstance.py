@@ -14,7 +14,7 @@ import time
 class StreamingInstance():
      def __init__(self, id, video_filename = None):
           self.id = id
-          self.video_filename = video_filename
+          self.video_filename = self.get_video_source()
           self.XDmodel = detector.load_model()
           
           self.recorder = VideoRecorder(video_filename=self.video_filename)
@@ -59,7 +59,7 @@ class StreamingInstance():
           self.xd_process = None
           self.extract_process = None
           self.stream_process = None
-
+     
      def start(self):
           self.process_running.set()
           record_process = threading.Thread(target=self.recorder.record, args = ( self.single_frame_event, self.interval_extract_event, self.process_running , self.outputRGBs, self.frames_queue, self.outputRGB,))
@@ -79,7 +79,16 @@ class StreamingInstance():
           # self.stream_process = stream_process
           self.ssd_process = ssd_process
 
-
+     def get_video_source(self):
+          id = self.id
+          if(id == 1):
+               self.video_filename = "demo.mp4"
+          elif(id == 2):
+               self.video_filename = "demo2.mp4"
+          elif(id == 3):
+               self.video_filename = "demo3.mp4"
+          elif(id == 4):
+               self.video_filename = "demo4.mp4"
      def xd(self):
           self.interval_extract_event.wait()
           while(self.process_running.isSet() == True):
