@@ -14,7 +14,7 @@ import time
 class StreamingInstance():
      def __init__(self, id, video_filename = None):
           self.id = id
-          self.video_filename = self.get_video_source()
+          self.video_filename = video_filename
           self.XDmodel = detector.load_model()
           
           self.recorder = VideoRecorder(video_filename=self.video_filename)
