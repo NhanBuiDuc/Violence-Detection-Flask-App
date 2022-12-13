@@ -11,8 +11,9 @@ from prediction import Prediction
 import threading
 import Feature_Extractor.extractor as extractor
 import time
+
 class StreamingInstance():
-     def __init__(self, id, video_filename = None):
+     def __init__(self, id, video_filename = None, ):
           self.id = id
           self.video_filename = video_filename
           self.XDmodel = detector.load_model()
@@ -92,7 +93,7 @@ class StreamingInstance():
      def xd(self):
           self.interval_extract_event.wait()
           while(self.process_running.isSet() == True):
-               time.sleep(0.5)
+               time.sleep(1)
                if(len(self.frames_queue) > 0):
                     self.i3d_extractor.extract(self.interval_extract_event, self.frames_queue, self.i3d_queue)
                if(len(self.i3d_queue) >= 5):
@@ -103,6 +104,7 @@ class StreamingInstance():
                     self.i3d_queue.pop(0)
 
      def get_prediction(self):
+          
           if self.prediction != None:
                return self.prediction
           else:
@@ -203,22 +205,24 @@ class StreamingInstance():
           return frame
 
      def generate(self):
-          while self.process_running.isSet() == True:
-                    # wait until the lock is acquired
-                    with self.ssd_lock:
-                         # check if the output frame is available, otherwise skip
-                         # the iteration of the loop
-                         if self.outputRGB is None:
-                              continue
-                         # encode the frame in JPEG format
-                         (flag, encodedImage) = cv2.imencode(".jpg", self.outputRGB)
-                         # ensure the frame was successfully encoded
-                         if not flag:
-                              continue
-                    # yield the output frame in the byte format
-                    yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + 
-                         bytearray(encodedImage) + b'\r\n')
-
+          try:
+               while self.process_running.isSet() == True:
+                         # wait until the lock is acquired
+                         with self.ssd_lock:
+                              # check if the output frame is available, otherwise skip
+                              # the iteration of the loop
+                              if self.outputRGB is None:
+                                   continue
+                              # encode the frame in JPEG format
+                              (flag, encodedImage) = cv2.imencode(".jpg", self.outputRGB)
+                              # ensure the frame was successfully encoded
+                              if not flag:
+                                   continue
+                         # yield the output frame in the byte format
+                         yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + 
+                              bytearray(encodedImage) + b'\r\n')
+          except:
+               pass
      def stop(self):
           self.process_running.clear()
           self.recorder.stop()
