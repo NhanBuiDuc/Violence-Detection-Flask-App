@@ -1,4 +1,5 @@
-from datetime import datetime
+from datetime import datetime as DateTime
+import datetime
 import cv2
 import wave
 import threading
@@ -21,12 +22,16 @@ class VideoRecorder():
         self.frameSize = (640,480)
         
     # Video starts being recorded 
-    def record(self, single_frame_event, interval_extract_event, process_stop,  outputRGBs, frames_queue, outputRGB):            
+    def record(self, single_frame_event, interval_extract_event, process_stop,  outputRGBs, frames_queue, outputRGB):  
+                reset = False     
+                frame = Frame(rgb = [])
+                frame.start = DateTime.now()
+                print("Start", frame.start)
                 while(process_stop.isSet() == True):
                     ret, video_frame = self.video_cap.read()
 
                     if (ret == True):
-                        
+
                         # # Display the resulting frame
                         # cv2.imshow('Video', video_frame)
                     
@@ -35,22 +40,30 @@ class VideoRecorder():
                         #     break
 
                         single_frame_event.set()
-
-                        if self.frame_count == 0:
-                            frame = Frame(start = datetime.now(), rgb = [])
-
-                        
-                        frame.rgb.append(video_frame)
+                        # if self.frame_count == 0 and reset == True:
+                        #     frame = Frame(rgb = [])
+                        #     frame.start = datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
+                        #     reset = False
+                            
+                        if(frame != None):
+                            frame.rgb.append(video_frame)
 
                         self.frame_count += 1
                         if (self.frame_count == (self.fps * self.save_interval)):
-                            frame.end = datetime.now()
+                            frame.end = (frame.start + datetime.timedelta(0, 5))
+                            newStartTime = frame.end
+                            print("End", frame.end)
+                            
                             self.frame_count = 0
+                            # reset = True
                             frames_queue.append(frame)
+                            frame = Frame(rgb = [])
+                            frame.start = newStartTime
+                            # reset = False
                         outputRGB = video_frame
                         outputRGBs.append(video_frame)
                         
-                        if len(frames_queue) > 0:
+                        if len(frames_queue) > 5:
                             interval_extract_event.set()
                     else:
                         self.stop()

@@ -4,13 +4,21 @@ from flask import Response
 from StreamingInstance import StreamingInstance 
 import threading
 from multiprocessing import Manager
-import os
-import sys
+from flask import current_app
 from waitress import serve
 import requests
 from flask_cors import CORS, cross_origin
 
-app = Flask('app')
+def create_app():
+    app = Flask(__name__)
+
+    return app
+# app = Flask('app')
+
+app = create_app()
+# with app.app_context():
+# 	current_app.config["ENV"]
+app.app_context().push()
 cors = CORS(app)
 CORS(app, support_credentials=True)
 app.config['CORS_HEADERS'] = 'Content-Type'
@@ -24,7 +32,7 @@ def start():
 	args = 	request.args
 	id = args.get('connection_string')
 	id = 1
-	stream = StreamingInstance(id = id, video_filename="demo.mp4", )
+	stream = StreamingInstance(app, id = id, )
 	instances.update( {str(stream.id):stream} )
 	stream.start()
 	response = app.response_class(
@@ -77,14 +85,14 @@ def xd():
 		id = 1
 
 		stream = instances.get(str(id))
-		prediction = stream.get_prediction()
+		prediction = stream.prediction
 		if(prediction.prediction != None):
 			return jsonify(
 					start = str(prediction.start_datetime()),
 					end = str(prediction.end_datetime()),
 					score = str(prediction.score),
 					prediction = str(prediction.prediction),
-					thresh_hold = prediction.thresh_hold
+					connection_string = str(id)
 			)
 		else:
 			response = app.response_class(
@@ -98,7 +106,6 @@ def xd():
 			status=200,
 			mimetype='application/json')
 		return response
-
 @cross_origin(supports_credentials=True)
 @app.route("/video_feed", methods = ['GET', 'POST'])
 def video_feed():

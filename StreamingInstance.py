@@ -1,5 +1,5 @@
 import numpy as np
-import multiprocessing
+from flask import Flask, request, render_template, json, jsonify
 from multiprocessing import Manager
 import pickle
 import cv2
@@ -11,11 +11,14 @@ from prediction import Prediction
 import threading
 import Feature_Extractor.extractor as extractor
 import time
-
+import requests
+import json
+from request.xd_req import xd_req 
 class StreamingInstance():
-     def __init__(self, id, video_filename = None, ):
+     def __init__(self, app, id):
+          self.app = app
           self.id = id
-          self.video_filename = video_filename
+          self.video_filename = self.get_video_source()
           self.XDmodel = detector.load_model()
           
           self.recorder = VideoRecorder(video_filename=self.video_filename)
@@ -82,26 +85,60 @@ class StreamingInstance():
 
      def get_video_source(self):
           id = self.id
+          filename = ""
           if(id == 1):
                self.video_filename = "demo.mp4"
+               filename = "demo.mp4"
           elif(id == 2):
                self.video_filename = "demo2.mp4"
+               filename = "demo.mp4"
           elif(id == 3):
                self.video_filename = "demo3.mp4"
+               filename = "demo.mp4"
           elif(id == 4):
                self.video_filename = "demo4.mp4"
+               filename = "demo.mp4"
+          return filename
      def xd(self):
           self.interval_extract_event.wait()
           while(self.process_running.isSet() == True):
-               time.sleep(1)
                if(len(self.frames_queue) > 0):
                     self.i3d_extractor.extract(self.interval_extract_event, self.frames_queue, self.i3d_queue)
                if(len(self.i3d_queue) >= 5):
+                    self.i3d_queue.pop(0)
                     detector.inference(frames = self.i3d_queue, model=self.XDmodel, batch = self.xd_batch, prediction = self.prediction)
-                    print("At: ", self.prediction.start)
+                    print("At: ", self.prediction.start.strftime("%m/%d/%Y, %H:%M:%S"))
                     print("Violence: ", self.prediction.prediction)
                     print("Violent Rate: ", self.prediction.score)
-                    self.i3d_queue.pop(0)
+
+                    # self.i3d_queue.pop(0)
+                    # self.i3d_queue.pop(0)
+                    # self.i3d_queue.pop(0)
+                    # self.i3d_queue.pop(0)
+                    self.send_xd_post_request()
+
+     def send_xd_post_request(self):
+          with self.app.test_request_context('/'):
+               prediction = self.prediction
+               if(prediction.prediction != None):
+                    # data = json.dumps(
+                              # start = str(prediction.start_datetime()),
+                              # end = str(prediction.end_datetime()),
+                              # score = str(prediction.score),
+                              # prediction = str(prediction.prediction),
+                              # connection_string = str(id)
+                    # )
+                    new_prediction = xd_req()
+                    new_prediction.start = str(prediction.start_datetime()),
+                    new_prediction.end = str(prediction.end_datetime()),
+                    new_prediction.score = str(prediction.score),
+                    new_prediction.prediction = str(prediction.prediction),
+                    new_prediction.connection_string = str(id)
+                    new_prediction.thresh_hold = str("0.5")
+                    data = json.dumps(new_prediction.toJson())
+               res = requests.post('https://violence-detection-backend.vercel.app/contacts/connection_string', json = data)
+               print ('response from server:',res)
+               dictFromServer = res.json()
 
      def get_prediction(self):
           
