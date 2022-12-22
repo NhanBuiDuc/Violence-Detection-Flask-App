@@ -9,5 +9,5 @@ class xd_req():
         self.thresh_hold = thresh_hold
         self.connection_string = connection_string
     def toJson(self):
-        data = {"start": self.start, "end": self.end, "score": self.score, "prediction": self.prediction, "thresh_hold": self.thresh_hold, "self.connection_string": self.connection_string}
+        data = {"start": self.start[0], "end": self.end[0], "score": self.score[0], "prediction": self.prediction[0], "thresh_hold": self.thresh_hold, "connection_string": self.connection_string}
         return data

@@ -131,14 +131,16 @@ class StreamingInstance():
                     new_prediction = xd_req()
                     new_prediction.start = str(prediction.start_datetime()),
                     new_prediction.end = str(prediction.end_datetime()),
-                    new_prediction.score = str(prediction.score),
+                    new_prediction.score = str(prediction.score[0]),
                     new_prediction.prediction = str(prediction.prediction),
-                    new_prediction.connection_string = str(id)
+                    new_prediction.connection_string = str(self.id)
                     new_prediction.thresh_hold = str("0.5")
                     data = json.dumps(new_prediction.toJson())
-               res = requests.post('https://violence-detection-backend.vercel.app/contacts/connection_string', json = data)
-               print ('response from server:',res)
-               dictFromServer = res.json()
+               if(prediction.prediction == True):
+                    # res = requests.post('https://violence-detection-backend.vercel.app/camera_event/connection_string', json = data)
+                    res = requests.post('http://localhost:3000/camera_event/connection_string/', data = new_prediction.toJson())
+                    print ('response from server:',res)
+               # dictFromServer = res.json()
 
      def get_prediction(self):
           

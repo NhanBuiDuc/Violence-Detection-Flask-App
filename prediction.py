@@ -8,6 +8,7 @@ class Prediction():
 
         
     def start_datetime(self):
-        return self.start.strftime("%m/%d/%Y, %H:%M:%S")
+        return self.start.strftime("%Y-%m-%d %H:%M:%S")
     def end_datetime(self):
-        return self.end.strftime("%m/%d/%Y, %H:%M:%S")
+        # return self.end.strftime("%m/%d/%Y %H:%M:%S")
+        return self.end.strftime("%Y-%m-%d %H:%M:%S")
