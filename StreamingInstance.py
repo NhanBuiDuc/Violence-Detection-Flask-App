@@ -75,7 +75,7 @@ class StreamingInstance():
           # extract_process.start()
           record_process.start()
           xd_process.start()
-          # ssd_process.start()
+          ssd_process.start()
           # stream_process.start()
           
           self.record_process = record_process
@@ -138,7 +138,7 @@ class StreamingInstance():
                     data = json.dumps(new_prediction.toJson())
                if(prediction.prediction == True):
                     # res = requests.post('https://violence-detection-backend.vercel.app/camera_event/connection_string', json = data)
-                    res = requests.post('http://localhost:3000/camera_event/connection_string/', data = new_prediction.toJson())
+                    res = requests.post('https://violence-detection-backend.vercel.app/camera_event/connection_string', data = new_prediction.toJson())
                     print ('response from server:',res)
                # dictFromServer = res.json()
 
